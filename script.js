@@ -153,3 +153,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.createElement('button');
+    toggleButton.innerText = 'Toggle Dark Mode';
+    toggleButton.className = 'toggle-dark-mode';
+
+    toggleButton.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        document.body.classList.toggle('light-mode');
+    });
+
+    document.body.appendChild(toggleButton);
+});
