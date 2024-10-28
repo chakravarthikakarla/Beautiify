@@ -1148,3 +1148,20 @@ footer {
         margin: 15px !important;
     }
 }
+/* Light mode styles */
+body.light-mode {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+button.toggle-dark-mode {
+    margin: 1em;
+    padding: 0.5em 1em;
+    cursor: pointer;
+}
