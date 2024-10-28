@@ -1,167 +1,81 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Loader
     setTimeout(function () {
         document.querySelector("body").classList.add("loaded");
-    }, 500)
-});
+    }, 500);
 
-let calcScrollValue = () => {
-    let scrollProg = document.getElementById("progress");
-    let pos = document.documentElement.scrollTop;
-    let calcHeight =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-    let scrollValue = Math.round((pos * 100) / calcHeight);
-    if (pos > 100) {
-        scrollProg.style.display = "grid";
-    } else {
-        scrollProg.style.display = "none";
-    }
-    scrollProg.addEventListener("click", () => {
+    // Scroll to Top
+    let calcScrollValue = () => {
+        let scrollProg = document.getElementById("progress");
+        let pos = document.documentElement.scrollTop;
+        let calcHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        let scrollValue = Math.round((pos * 100) / calcHeight);
+        scrollProg.style.display = pos > 100 ? "grid" : "none";
+        scrollProg.style.background = `conic-gradient(#0063ba ${scrollValue}%, #d499de ${scrollValue}%)`;
+    };
+    document.getElementById("progress").addEventListener("click", () => {
         document.documentElement.scrollTop = 0;
     });
-    scrollProg.style.background = `conic-gradient(#0063ba ${scrollValue}%, #d499de ${scrollValue}%)`;
-};
+    window.onscroll = calcScrollValue;
+    window.onload = calcScrollValue;
 
-window.addEventListener('scroll', function () {
-    var scrollToTopButton = document.getElementById('progress');
-    if (window.pageYOffset > 200) {
-        scrollToTopButton.style.display = 'block';
-    } else {
-        scrollToTopButton.style.display = 'none';
+    // Component Filter
+    function filterComponents() {
+        let filter = searchBarInput.value.toUpperCase().trim();
+        let components = document.querySelectorAll('.container .box');
+        let selectedComponents = 0;
+        components.forEach(component => {
+            let componentName = component.querySelector('h2').textContent;
+            component.style.display = componentName.toUpperCase().includes(filter) ? "flex" : "none";
+            selectedComponents += component.style.display === "flex" ? 1 : 0;
+        });
+        document.querySelector(".no-results").style.display = selectedComponents ? "none" : "flex";
     }
-});
+    const searchBarInput = document.querySelector("#searchBar input");
+    searchBarInput.addEventListener("input", filterComponents);
 
-window.onscroll = calcScrollValue;
-window.onload = calcScrollValue;
+    // Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        const micBtn = searchBar.querySelector("button");
+        const micIcon = micBtn.firstElementChild;
 
-// Function to filter components
-function filterComponents() {
-    var input, filter, components, i;
-    input = document.getElementById('componentSearch');
-    filter = input.value.toUpperCase().trim();
-    components = document.querySelectorAll('.container .box');
-    console.log(filter)
-    console.log(components)
-
-    let selected_components = 0;
-    for (i = 0; i < components.length; i++) {
-        var component = components[i];
-        var h2 = component.querySelector('h2');
-        var componentName = h2.textContent || h2.innerText;
-
-        if (componentName.toUpperCase().indexOf(filter) > -1) {
-            component.style.display = "flex";
-            selected_components++;
-        } else {
-            component.style.display = "none";
-        }
-    }
-    if (selected_components === 0) {
-        document.querySelector(".no-results").style.display = "flex";
-    } else {
-        document.querySelector(".no-results").style.display = "none";
-    }
-}
-
-// Voice command in search bar feature
-const searchBar = document.querySelector("#searchBar");
-const searchBarInput = searchBar.querySelector("input");
-
-// The speech recognition interface lives on the browser’s window object
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (SpeechRecognition) {
-    console.log("Your Browser supports speech Recognition");
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-
-    searchBar.insertAdjacentHTML("beforeend", '<button type="button"><i class="fas fa-microphone"></i></button>');
-    searchBarInput.style.paddingRight = "50px";
-
-    const micBtn = searchBar.querySelector("button");
-    const micIcon = micBtn.firstElementChild;
-
-    micBtn.addEventListener("click", micBtnClick);
-    function micBtnClick() {
-        if (micIcon.classList.contains("fa-microphone")) { // Start Voice Recognition
-            recognition.start(); // First time you have to allow access to mic!
-        }
-        else {
-            recognition.stop();
-        }
+        micBtn.addEventListener("click", () => {
+            micIcon.classList.toggle("fa-microphone", !recognition.start());
+            micIcon.classList.toggle("fa-microphone-slash", recognition.start());
+        });
+        
+        recognition.addEventListener("result", event => {
+            searchBarInput.value = event.results[event.resultIndex][0].transcript.trim();
+            filterComponents();
+        });
     }
 
-    recognition.addEventListener("start", startSpeechRecognition);
-    function startSpeechRecognition() {
-        micIcon.classList.remove("fa-microphone");
-        micIcon.classList.add("fa-microphone-slash");
-        searchFormInput.focus();
-        console.log("Voice activated, SPEAK");
-    }
-
-    recognition.addEventListener("end", endSpeechRecognition);
-    function endSpeechRecognition() {
-        micIcon.classList.remove("fa-microphone-slash");
-        micIcon.classList.add("fa-microphone");
-        searchBarInput.focus();
-        console.log("Speech recognition service disconnected");
-    }
-
-    recognition.addEventListener("result", resultOfSpeechRecognition);
-    function resultOfSpeechRecognition(event) {
-        const current = event.resultIndex;
-        const transcript = event.results[current][0].transcript;
-        newtranscript = transcript.endsWith('.') ? transcript.slice(0, -1) : transcript;
-        console.log(newtranscript)
-        searchBarInput.value = newtranscript;
-        filterComponents();
-    }
-}
-else {
-    console.log("Your Browser does not support speech Recognition");
-    info.textContent = "Your Browser does not support Speech Recognition";
-}
-
-// JavaScript to highlight the active section in the navbar
-document.addEventListener("DOMContentLoaded", function () {
-    const homeLink = document.querySelector('.nav-menu a[href="#home"]');
+    // Navbar Active Link Highlight
+    const homeLink = document.querySelector('.nav-menu a[href="index.html"]');
     const componentsLink = document.querySelector('.nav-menu a[href="#components"]');
-
-    const searchBarSection = document.getElementById('searchBar');
     const componentsSection = document.getElementById('components');
-
-    componentsLink.addEventListener('click', (event) => {
+    
+    componentsLink.addEventListener('click', event => {
         event.preventDefault();
         componentsSection.scrollIntoView({ behavior: 'smooth' });
         componentsLink.style.color = 'red';
         homeLink.style.color = '';
     });
-
+    
     window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
-
-        // Adjust the offset accordingly
         const componentsSectionTop = componentsSection.offsetTop - 50;
-
-        if (currentScroll >= componentsSectionTop) {
-            componentsLink.style.color = 'red';
-            homeLink.style.color = '';
-        } else {
-            componentsLink.style.color = '';
-            homeLink.style.color = 'red';
-        }
+        let currentScroll = window.pageYOffset;
+        componentsLink.style.color = currentScroll >= componentsSectionTop ? 'red' : '';
+        homeLink.style.color = currentScroll < componentsSectionTop ? 'red' : '';
     });
-});
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleButton = document.createElement('button');
-    toggleButton.innerText = 'Toggle Dark Mode';
-    toggleButton.className = 'toggle-dark-mode';
-
-    toggleButton.addEventListener('click', () => {
+    
+    // Dark Mode Toggle
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    darkModeToggle.addEventListener("click", () => {
         document.body.classList.toggle('dark-mode');
         document.body.classList.toggle('light-mode');
     });
-
-    document.body.appendChild(toggleButton);
 });
